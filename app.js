@@ -11,12 +11,13 @@ app.use(express.json())
 app.use(cors({
     credentials: true
 }))
+app.set('trust proxy', 1)
 app.use(session({
     store: MongoStore.create({mongoUrl: url}),
     secret: '89050a617a0741cb3d34a87f48f97b2e',
     resave: true,
     saveUninitialized: true,
-    cookie: { }
+    cookie: { secure: true}
 }))
 
 app.use("/items", itemsroute)
