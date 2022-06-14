@@ -17,7 +17,7 @@ app.use(session({
     secret: '89050a617a0741cb3d34a87f48f97b2e',
     resave: true,
     saveUninitialized: true,
-    cookie: { }
+    cookie: { sameSite: 'none' }
 }))
 
 app.use("/items", itemsroute)
