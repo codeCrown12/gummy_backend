@@ -4,12 +4,17 @@ const app = express()
 const itemsroute = require("./routes/items.js")
 const usersroute = require('./routes/users.js')
 const session = require('express-session');
+const MongoStore = require('connect-mongo')(session)
+const url = "mongodb+srv://dbschoolhero:uJkTKLFBLIHB06xE@testcluster.l7oe0.mongodb.net/gummy?retryWrites=true&w=majority";
 
 app.use(express.json())
 app.use(cors({
     credentials: true
 }))
 app.use(session({
+    store: new MongoStore({
+        url: url
+    }),
     secret: '89050a617a0741cb3d34a87f48f97b2e',
     resave: true,
     saveUninitialized: true,
