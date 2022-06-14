@@ -3,8 +3,7 @@ const multer = require('multer')
 const MongoClient = require('mongodb').MongoClient
 const {v4 : uuidv4} = require('uuid')
 const bcrypt = require('bcrypt');
-const cookieParser = require('cookie-parser')
-var session = require('express-session');
+
 
 // MongoDB connection
 const url = "mongodb+srv://dbschoolhero:uJkTKLFBLIHB06xE@testcluster.l7oe0.mongodb.net/gummy?retryWrites=true&w=majority";
@@ -17,12 +16,6 @@ MongoClient.connect(url, (err, client) => {
 })
 
 const router = express.Router()
-router.use(cookieParser())
-router.use(session({
-    secret: '89050a617a0741cb3d34a87f48f97b2e',
-    resave: true,
-    saveUninitialized: true
-}))
 
 
 // UTILITY FUNCTIONS 
@@ -56,10 +49,11 @@ const authenticateUser = async (email, password) => {
 
 const isLoggedIn = (req, res, next) => {
     if(req.session.user){
+        console.log(req.session.user)
         next();
      } else {
-        console.log(req.session.user);
-        res.status(403).send("Not logged in")
+        console.log(req.session.user)
+        res.status(403).send({ status: 'error', error: 'not logged in', data: null })
      }
 }
 
@@ -83,16 +77,23 @@ router.post('/register', async (req, res, next) => {
 })
 
 // LOGIN OLD USER
-router.post('/login', async (req, res, next) => {
+router.post('/login', async (req, res) => {
     let userDetails = req.body
     let userValid = await authenticateUser(userDetails.email, userDetails.password)
     if (userValid.status == true) {
         req.session.user = userValid.data.userId
+        console.log(req.session)
         res.send({status: 'ok', error: null, data: {msg: 'login successful'}})
     }
     else{
         res.status(403).send({ status: 'error', error: 'Invalid login credentials', data: null })
     }
 })
+
+// CHECK IF USER IS LOGGED IN
+router.post('/isloggedin', isLoggedIn, (req, res) => {
+    res.send({status: 'ok', error: null, data: {msg: 'logged in'}})
+})
+
 
 module.exports = router
