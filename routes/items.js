@@ -3,6 +3,7 @@ const multer = require('multer');
 const path = require('path');
 const MongoClient = require('mongodb').MongoClient;
 const {v4 : uuidv4} = require('uuid')
+const utils = require('../utilities/utilityfuncs')
 
 // MongoDB connection
 const url = "mongodb+srv://dbschoolhero:uJkTKLFBLIHB06xE@testcluster.l7oe0.mongodb.net/gummy?retryWrites=true&w=majority";
@@ -22,7 +23,7 @@ const imageStorage = multer.diskStorage({
     filename: (req, file, cb) => {
         cb(null, uuidv4() + '_' + Date.now() + path.extname(file.originalname))
     }
-});
+})
 
 const imageUpload = multer({
     storage: imageStorage,
@@ -30,14 +31,14 @@ const imageUpload = multer({
         fileSize: 1000000
     },
     fileFilter(req, file, cb) {
-        if (!file.originalname.match(/\.(png|jpg)$/)) {
-            return cb(new Error('Please upload a Image'))
+        if (!file.originalname.match(/\.(png|jpg|jpeg)$/)) {
+            return cb(new Error('Please upload an image'))
         }
         cb(undefined, true)
     }
 }) 
 
-router.post('/uploadimages', imageUpload.array('item_image', 6), (req, res) => {
+router.post('/uploadimages', utils.isLoggedIn, imageUpload.array('item_image', 6), (req, res) => {
     let image_urls = []
     const url = req.protocol + '://' + req.get('host')
     for (var i = 0; i < req.files.length; i++) {
@@ -51,8 +52,10 @@ router.post('/uploadimages', imageUpload.array('item_image', 6), (req, res) => {
 
 
 // Add item details to db
-router.post('/additem', (req, res, next) => {
+router.post('/additem', utils.isLoggedIn, (req, res, next) => {
     let item = req.body
+    item.userId = req.session.user 
+    item.itemId = utils.generateItemId()
     db.collection('items').insertOne(item, (err, result) => {
         if (err) return next(err)
         res.send({status: 'ok', error: null, data: {msg: 'item added successfully'}})

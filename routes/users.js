@@ -1,9 +1,8 @@
 const express = require('express')
-const multer = require('multer')
 const MongoClient = require('mongodb').MongoClient
 const {v4 : uuidv4} = require('uuid')
-const bcrypt = require('bcrypt');
-
+const bcrypt = require('bcrypt')
+const utils = require('../utilities/utilityfuncs')
 
 // MongoDB connection
 const url = "mongodb+srv://dbschoolhero:uJkTKLFBLIHB06xE@testcluster.l7oe0.mongodb.net/gummy?retryWrites=true&w=majority";
@@ -47,17 +46,6 @@ const authenticateUser = async (email, password) => {
     return {status: false, data: null}
 }
 
-const isLoggedIn = (req, res, next) => {
-    if(req.session.user){
-        console.log(req.session.user)
-        next();
-     } else {
-        console.log(req.session.user)
-        res.status(403).send({ status: 'error', error: 'not logged in', data: null })
-     }
-}
-
-
 // REGISTER NEW USER
 router.post('/register', async (req, res, next) => {
     let userDetails = req.body
@@ -82,7 +70,6 @@ router.post('/login', async (req, res) => {
     let userValid = await authenticateUser(userDetails.email, userDetails.password)
     if (userValid.status == true) {
         req.session.user = userValid.data.userId
-        console.log(req.session)
         res.send({status: 'ok', error: null, data: {msg: 'login successful'}})
     }
     else{
@@ -91,9 +78,24 @@ router.post('/login', async (req, res) => {
 })
 
 // CHECK IF USER IS LOGGED IN
-router.post('/isloggedin', isLoggedIn, (req, res) => {
+router.post('/isloggedin', utils.isLoggedIn, (req, res) => {
     res.send({status: 'ok', error: null, data: {msg: 'logged in'}})
 })
 
+// GET USER'S ITEM INVENTORY
+router.get('/getinventory', utils.isLoggedIn, async (req, res, next)=>{
+    let userId = req.session.user
+    let query = {userId: userId}
+    let options = {
+        projection: {_id: 0}
+    }
+    const itemsCount = await db.collection('items').countDocuments(query)
+    if (itemsCount >= 1) {
+        db.collection('items').find(query, options).toArray((err, results) => {
+            if (err) return next(err)
+            res.send({status: 'ok', error: null, data:results})
+        })
+    }
+})
 
 module.exports = router
