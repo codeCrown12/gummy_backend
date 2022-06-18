@@ -1,6 +1,6 @@
 const express = require('express')
 const multer = require('multer');
-const path = require('path');
+const path = require('path')
 const MongoClient = require('mongodb').MongoClient;
 const {v4 : uuidv4} = require('uuid')
 const utils = require('../utilities/utilityfuncs')
@@ -62,10 +62,31 @@ router.post('/additem', utils.isLoggedIn, (req, res, next) => {
     })
 })
 
-router.use((err, req, res) => {
-    console.log(err.stack)
-    res.status(403)
-    res.send({status: 'ok', error: err.message, data: null})
+// Update item details in db
+router.put('/updateitemdetails', utils.isLoggedIn, (req, res, next) => {
+    let itemDetails = req.body
+    let new_value = {$set: itemDetails}
+    let query = {itemId: itemDetails.itemId}
+    let options = { safe: true, multi: false }
+    db.collection('items').updateOne(query, new_value, options, (err, results) => {
+        if(err) return next(err)
+    })
+    res.send({status: 'ok', error: null, data: {msg: 'item details updated successfully'}})
+})
+
+// Delete item from db
+router.delete('/deleteitem', utils.isLoggedIn, (req, res, next) => {
+    let itemId = req.body.itemId
+    let query = {itemId: itemId}
+    db.collection('items').deleteOne(query, (err, results) => {
+        if (err) return next(err)
+    })
+    res.send({status: 'ok', error: null, data: {msg: 'item removed successfully'}})
+})
+
+router.use((err, req, res, next) => {
+    console.error(err.stack)
+    res.status(500).send({status: 'error', error: err.message, data: null})
 })
 
 module.exports = router

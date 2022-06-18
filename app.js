@@ -43,8 +43,24 @@ app.use(function(req, res, next){
     })
 })
 
+app.delete('/remove_files', (req, res, next) => {
+    let img_urls = req.body
+    img_urls.forEach(img => {
+        let img_path = path.join(__dirname, img.substring(22))
+        fs.unlink(img_path, (err) => {
+            if (err) return next(err)
+        })
+    });
+    res.send({status: 'ok', error: null, data: {msg: 'image(s) removed successfully'}})
+})
+
 app.get('/', (req, res) => {
     res.send("Welcome to gummy")
+})
+
+app.use((err, req, res, next) => {
+    console.log(err.stack)
+    res.status(500).send({status: 'error', error: err.message, data: null})
 })
 
 const port = process.env.PORT || 5000
