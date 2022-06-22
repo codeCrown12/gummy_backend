@@ -28,7 +28,7 @@ app.use("/items", itemsroute)
 app.use("/users", usersroute)
 
 app.use(function(req, res, next){
-    var filePath = path.join(__dirname, req.url)
+    var filePath = path.join(__dirname, req.path)
     fs.stat(filePath, function(err, fileInfo){
         if (err) {
             next()

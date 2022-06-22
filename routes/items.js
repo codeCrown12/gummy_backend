@@ -17,6 +17,7 @@ MongoClient.connect(url, (err, client) => {
 
 const router = express.Router()
 
+
 // Upload item images
 const imageStorage = multer.diskStorage({
     destination: 'item_images',
@@ -32,7 +33,7 @@ const imageUpload = multer({
     },
     fileFilter(req, file, cb) {
         if (!file.originalname.match(/\.(png|jpg|jpeg)$/)) {
-            return cb(new Error('Please upload an image'))
+            return cb(new Error('Please upload an image'), false)
         }
         cb(undefined, true)
     }
@@ -82,6 +83,17 @@ router.delete('/deleteitem', utils.isLoggedIn, (req, res, next) => {
         if (err) return next(err)
     })
     res.send({status: 'ok', error: null, data: {msg: 'item removed successfully'}})
+})
+
+// select items from db
+router.get('/getitems', (req, res) => {
+    let options = {
+        projection: {_id: 0, userId: 0, status: 0, date_added: 0, description: 0}
+    }
+    db.collection('items').find({}, options).toArray((err, results) => {
+        if (err) return next(err)
+        res.send({status: 'ok', error: null, data:results})
+    })
 })
 
 router.use((err, req, res, next) => {
