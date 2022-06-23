@@ -86,13 +86,26 @@ router.delete('/deleteitem', utils.isLoggedIn, (req, res, next) => {
 })
 
 // select items from db
-router.get('/getitems', (req, res) => {
+router.get('/getitems', (req, res, next) => {
     let options = {
         projection: {_id: 0, userId: 0, status: 0, date_added: 0, description: 0}
     }
     db.collection('items').find({}, options).toArray((err, results) => {
         if (err) return next(err)
         res.send({status: 'ok', error: null, data:results})
+    })
+})
+
+// get item details from db
+router.get('/getitemdetails', (req, res, next) => {
+    let itemId = req.query.itemId
+    let query = {itemId: itemId}
+    let options = {
+        projection: {_id: 0, userId: 0, status: 0, date_added: 0}
+    }
+    db.collection('items').findOne(query, options, (err, result) => {
+        if (err) return next(err)
+        res.send({status: 'ok', error: null, data:result})
     })
 })
 
