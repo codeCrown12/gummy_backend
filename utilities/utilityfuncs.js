@@ -6,7 +6,7 @@ const isLoggedIn = (req, res, next) => {
      }
 }
 
-const generateItemId = (length = 8) => {
+const generateId = (length = 8) => {
     let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     let id = '';
     for (let i = 0; i < length; i++) {
@@ -15,4 +15,4 @@ const generateItemId = (length = 8) => {
     return id;
 };
 
-module.exports = { isLoggedIn, generateItemId }
+module.exports = { isLoggedIn, generateId }

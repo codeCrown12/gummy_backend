@@ -83,6 +83,13 @@ router.post('/isloggedin', utils.isLoggedIn, (req, res) => {
     res.send({status: 'ok', error: null, data: {msg: 'logged in'}})
 })
 
+router.post('/logout', utils.isLoggedIn, (req, res) => {
+    req.session.destroy(() => {
+        res.send({status: 'ok', error: null, data: {msg: 'logged out'}})
+    })
+})
+
+
 // GET USER'S DETAILS FROM DB
 router.get('/getuserdetails',utils.isLoggedIn, async (req, res) => {
     let userId = req.session.user

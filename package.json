@@ -12,6 +12,7 @@
         "express-session": "^1.17.3",
         "mongodb": "^4.5.0",
         "multer": "^1.4.5-lts.1",
+        "stripe": "^9.10.0",
         "uuid": "^8.3.2"
     },
     "scripts": {
