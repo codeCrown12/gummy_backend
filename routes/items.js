@@ -89,7 +89,7 @@ router.delete('/deleteitem', utils.isLoggedIn, (req, res, next) => {
 // select items from db
 router.get('/getitems', (req, res, next) => {
     let options = {
-        projection: {_id: 0, userId: 0, status: 0, date_added: 0, description: 0}
+        projection: {_id: 0, userId: 0, date_added: 0, description: 0}
     }
     db.collection('items').find({}, options).toArray((err, results) => {
         if (err) return next(err)
@@ -112,23 +112,32 @@ router.get('/getitemdetails', (req, res, next) => {
 
 // create check out flow
 router.post('/create-checkout-session', utils.isLoggedIn, async (req, res) => {
-    let itemDetails = await db.collection('items').findOne({itemId: req.body.itemId}, { _id: 0, userId: 1, name: 1 })
+    let itemDetails = await db.collection('items').findOne({itemId: req.body.itemId}, { _id: 0, userId: 1, name: 1, status: 1 })
     
     if (req.session.user == itemDetails.userId) {
         res.status(403).send({ status: 'error', error: 'You cannot book your own items', data: null })
+    }
+    else if (itemDetails.status != 'in inventory'){
+        res.status(403).send({ status: 'error', error: 'Item has already been booked', data: null })
     }
     else{
         let bookingId = utils.generateId()
         let bookingDetails = {
             bookingId: bookingId,
+            itemId: req.body.itemId,
             borrowerId: req.session.user,
             ownerId: itemDetails.userId,
             date_booked: new Date(),
+            date: {
+                start_date: req.body.start_date,
+                end_date: req.body.end_date
+            },
             duration: req.body.duration,
             amount: req.body.amount,
             payment_verified: false
         }
         await db.collection('bookings').insertOne(bookingDetails)
+        await db.collection('items').updateOne({itemId: req.body.itemId}, {$set: {status: 'booked'}})
         const session = await stripe.checkout.sessions.create({
         line_items: [
             {
@@ -151,12 +160,29 @@ router.post('/create-checkout-session', utils.isLoggedIn, async (req, res) => {
     }
 });
 
-
-router.post('/confirmpayment', async(req, res, next) => {
+// Confirm payment
+router.post('/confirmpayment', utils.isLoggedIn, async(req, res, next) => {
     let bookingId = req.query.bookingId
     await db.collection('bookings').updateOne({bookingId: bookingId}, {$set: {payment_verified: true}})
     res.send({status: 'ok', error: null, data: {msg: 'payment confirmed'}})
 })
+
+// get user's bookings
+router.get('/getbookings', utils.isLoggedIn, async(req, res) => {
+    db.collection('bookings').find({borrowerId: req.session.user}).toArray((err, results) => {
+        if (err) return next(err)
+        res.send({status: 'ok', error: null, data:results})
+    })
+})
+
+// get user's leased out bookings
+router.get('/getleasedoutbookings', utils.isLoggedIn, async(req, res) => {
+    db.collection('bookings').find({ownerId: req.session.user}).toArray((err, results) => {
+        if (err) return next(err)
+        res.send({status: 'ok', error: null, data:results})
+    })
+})
+
 
 
 router.use((err, req, res, next) => {
