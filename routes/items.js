@@ -133,7 +133,7 @@ router.post('/create-checkout-session', utils.isLoggedIn, async (req, res) => {
                 end_date: req.body.end_date
             },
             duration: req.body.duration,
-            amount: req.body.amount,
+            amount: parseFloat(req.body.amount) * req.body.duration,
             payment_verified: false
         }
         await db.collection('bookings').insertOne(bookingDetails)
@@ -146,7 +146,7 @@ router.post('/create-checkout-session', utils.isLoggedIn, async (req, res) => {
                 product_data: {
                     name: itemDetails.name,
                 },
-                unit_amount: parseFloat(req.body.amount) * 100,
+                unit_amount: parseFloat(req.body.amount) * req.body.duration * 100,
             },
             quantity: 1,
             },
