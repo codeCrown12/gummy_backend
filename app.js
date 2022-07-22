@@ -20,7 +20,7 @@ app.use(session({
     store: MongoStore.create({mongoUrl: url}),
     secret: '89050a617a0741cb3d34a87f48f97b2e',
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: { secure: 'auto' }
 }))
 
