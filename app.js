@@ -21,7 +21,7 @@ app.use(session({
     secret: '89050a617a0741cb3d34a87f48f97b2e',
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: 'auto' }
+    cookie: { secure: 'auto', maxAge: 24 * 60 * 60 * 1000 }
 }))
 
 app.use("/items", itemsroute)
