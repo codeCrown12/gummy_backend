@@ -1,9 +1,8 @@
 const isLoggedIn = (req, res, next) => {
     if(req.session.user){
-        console.log(req.session.user)
         next();
      } else {
-        res.status(403).send({ status: 'error', error: 'not logged in', data: null })
+        res.status(403).send({ status: 'error', error: `not logged in ${req.session.user}`, data: null })
      }
 }
 
