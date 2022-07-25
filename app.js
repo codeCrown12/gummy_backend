@@ -9,7 +9,7 @@ const itemsroute = require("./routes/items.js")
 const usersroute = require('./routes/users.js')
 const url = "mongodb+srv://dbschoolhero:uJkTKLFBLIHB06xE@testcluster.l7oe0.mongodb.net/gummy?retryWrites=true&w=majority";
 
-
+app.set("trust proxy", 1);
 app.use(express.json())
 app.use(cors({
     origin: 'https://gummy23.netlify.app',
